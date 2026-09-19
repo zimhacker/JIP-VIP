@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1 Device · 1 Key · 24h</title>
+    <title>Secure Auth Key | Alienkrishn</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
@@ -19,7 +19,7 @@
             align-items: center; padding: 20px; color: var(--light);
         }
         .container {
-            width: 100%; max-width: 560px;
+            width: 100%; max-width: 520px;
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px); border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -64,6 +64,7 @@
             100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
         }
         .auth-key-box.expired { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); }
+        .auth-key-box.locked { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); }
         .auth-key-box:hover { border-color: rgba(99, 102, 241, 0.5); box-shadow: 0 5px 15px rgba(99, 102, 241, 0.2); }
         .auth-key {
             font-family: 'Courier New', monospace; font-size: 20px;
@@ -72,7 +73,9 @@
         }
         .auth-key.received { color: var(--success); }
         .auth-key.expired { color: var(--danger); filter: blur(5px); user-select: none; }
+        .auth-key.locked { color: var(--warning); }
 
+        /* REQUEST STATUS BADGE */
         .receive-badge {
             display: flex; align-items: center; gap: 8px;
             padding: 12px 16px; border-radius: 10px;
@@ -98,6 +101,11 @@
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.3);
             color: var(--danger);
+        }
+        .receive-badge.locked {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: var(--warning);
         }
         .receive-badge .pulse-dot {
             width: 10px; height: 10px; border-radius: 50%;
@@ -129,17 +137,6 @@
             background: var(--success) !important;
             box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5) !important;
         }
-        .new-key-btn {
-            background: var(--success); color: white; border: none;
-            border-radius: 10px; padding: 14px 28px; font-size: 16px;
-            font-weight: 600; cursor: pointer; transition: all 0.3s ease;
-            display: flex; align-items: center; gap: 10px; white-space: nowrap;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-        }
-        .new-key-btn:hover {
-            background: #059669; transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
-        }
         .contact-admin-btn {
             background: var(--warning); color: white; border: none;
             border-radius: 10px; padding: 14px 28px; font-size: 15px;
@@ -169,14 +166,17 @@
         .status.expired { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); }
         .status.pending { background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3); }
         .status.requesting { background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.3); }
+        .status.locked { background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3); }
         .status-icon { color: var(--success); margin-right: 12px; font-size: 20px; transition: all 0.5s ease; }
         .status.expired .status-icon { color: var(--danger); }
         .status.pending .status-icon { color: var(--warning); }
         .status.requesting .status-icon { color: var(--primary-light); }
+        .status.locked .status-icon { color: var(--warning); }
         .status-text { font-size: 15px; color: var(--success); font-weight: 500; transition: all 0.5s ease; }
         .status.expired .status-text { color: var(--danger); }
         .status.pending .status-text { color: var(--warning); }
         .status.requesting .status-text { color: var(--primary-light); }
+        .status.locked .status-text { color: var(--warning); }
         .progress-container { margin-top: 10px; }
         .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--gray); margin-bottom: 8px; }
         .progress-bar { height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; overflow: hidden; }
@@ -185,6 +185,7 @@
             border-radius: 10px; width: 0%; transition: width 1s ease;
         }
         .progress.expired { background: var(--danger); width: 0%; }
+        .progress.locked { background: var(--warning); width: 100%; }
         .footer {
             text-align: center; padding: 20px;
             border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -228,54 +229,14 @@
             display: flex; align-items: center; gap: 8px; text-decoration: none;
         }
         .youtube-btn:hover { background: #e60000; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4); }
-
-        .device-id-badge {
-            background: rgba(99, 102, 241, 0.15);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            border-radius: 10px; padding: 12px 16px; margin-bottom: 16px;
-            font-size: 13px; display: flex; align-items: center; gap: 10px;
-            color: var(--primary-light); flex-wrap: wrap;
-        }
-        .device-id-badge i { font-size: 16px; }
-        .device-id-badge .device-hash {
-            font-family: 'Courier New', monospace; letter-spacing: 1px;
-            background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 6px;
-            font-weight: 600; color: #cbd5e1;
-        }
-        .one-device-lock {
-            color: var(--warning); font-size: 12px; margin-left: auto;
-            display: inline-flex; align-items: center; gap: 4px;
-        }
-        .validity-badge {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 8px; padding: 8px 12px; margin-bottom: 16px;
-            font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px;
-            color: var(--success);
-        }
-        .validity-badge i { font-size: 14px; }
-        .devices-counter {
-            background: rgba(139, 92, 246, 0.12);
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
-            font-size: 13px; display: flex; align-items: center; gap: 10px;
-            color: var(--primary-light);
-        }
-        .devices-counter .count-badge {
-            background: var(--primary);
-            color: white; font-weight: 700; padding: 2px 10px;
-            border-radius: 20px; font-size: 12px; margin-left: auto;
-        }
-
         @media (max-width: 580px) {
             .info-section { flex-direction: column; gap: 15px; }
             .auth-key { font-size: 16px; }
             .footer { flex-direction: column; gap: 10px; }
             .button-container { flex-direction: column; align-items: center; }
-            .copy-btn, .contact-admin-btn, .new-key-btn { width: 100%; justify-content: center; }
+            .copy-btn, .contact-admin-btn { width: 100%; justify-content: center; }
             .contact-links { flex-direction: column; }
             .telegram-btn, .youtube-btn { width: 100%; justify-content: center; }
-            .one-device-lock { margin-left: 0; width: 100%; }
         }
         .pulse { animation: pulse 2s infinite; }
         @keyframes pulse {
@@ -293,7 +254,6 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -301,58 +261,34 @@
         <div class="header">
             <div class="header-content">
                 <div class="logo"><i class="fas fa-key"></i></div>
-                <h1>1 Device · 1 Key</h1>
-                <p>Your key stays the same for 24h · Refresh safe</p>
+                <h1>Get Login Key</h1>
+                <p>Your secure authentication key</p>
             </div>
         </div>
 
         <div class="content">
-            <!-- DEVICE ID -->
-            <div class="device-id-badge" id="deviceIdBadge">
-                <i class="fas fa-fingerprint"></i>
-                <span>Your Device ID: <span class="device-hash" id="deviceHash">—</span></span>
-                <span class="one-device-lock"><i class="fas fa-lock"></i> 1‑Device</span>
-            </div>
-
-            <!-- DEVICES COUNTER -->
-            <div class="devices-counter">
-                <i class="fas fa-globe"></i>
-                <span>Registered devices</span>
-                <span class="count-badge" id="deviceCount">0</span>
-            </div>
-
-            <!-- VALIDITY -->
-            <div class="validity-badge">
-                <i class="fas fa-clock"></i>
-                <span>Same key for <strong>24 hours</strong> · Refresh safe</span>
-            </div>
-
-            <!-- REQUEST STATUS -->
+            <!-- REQUEST STATUS BADGE -->
             <div class="receive-badge waiting" id="receiveBadge">
                 <span class="pulse-dot"></span>
-                <span id="receiveText">Checking for your registered key...</span>
+                <span id="receiveText">Ready to request key from admin...</span>
             </div>
 
             <div class="auth-key-section">
                 <div class="section-title">
                     <i class="fas fa-user-lock"></i>
-                    Your Device Key (Locked for 24h)
+                    Your Panel Login Key
                 </div>
                 <div class="auth-key-box" id="authKeyBox">
                     <div class="auth-key" id="authKey">—</div>
                     <div class="expired-overlay" id="expiredOverlay">
                         <i class="fas fa-ban"></i>
-                        <div>Key Expired - Get New Key</div>
+                        <div>Key Expired - Admin Contact</div>
                     </div>
                 </div>
                 <div class="button-container">
                     <button class="copy-btn" id="copyBtn" disabled>
                         <i class="fas fa-copy"></i>
-                        Copy My Device Key
-                    </button>
-                    <button class="new-key-btn hidden" id="newKeyBtn">
-                        <i class="fas fa-sync-alt"></i>
-                        Get New Key (24h)
+                        Copy Panel Login Key
                     </button>
                     <a href="#" class="contact-admin-btn" id="contactAdminBtn" style="display: none;">
                         <i class="fas fa-headset"></i>
@@ -374,7 +310,7 @@
 
             <div class="progress-container">
                 <div class="progress-label">
-                    <span>Key Validity (24h)</span>
+                    <span>Key Validity</span>
                     <span id="countdown">No key loaded</span>
                 </div>
                 <div class="progress-bar"><div class="progress" id="progressBar"></div></div>
@@ -387,16 +323,16 @@
 
             <div class="contact-admin-section" id="contactAdminSection">
                 <h3><i class="fas fa-exclamation-triangle"></i> Key Expired</h3>
-                <p>Your 24‑hour key has expired. Click <strong>"Get New Key"</strong> to generate a fresh key for this device, or contact the administrator.</p>
+                <p>Your Panel Login key has expired. Please contact the administrator to request a new key.</p>
                 <div class="contact-links">
-                    <a href="https://t.me/ZimHackerVip" target="_blank" class="telegram-btn"><i class="fab fa-telegram"></i> Admin Telegram</a>
+                    <a href="https://t.me/ZimHackerVip" target="_blank" class="telegram-btn"><i class="fab fa-telegram"></i> Admin Contact Telegram</a>
                     <a href="https://www.youtube.com/channel/UCJ5d_D9V271-gizYZfUppUw" target="_blank" class="youtube-btn"><i class="fab fa-youtube"></i> YouTube Channel</a>
                 </div>
             </div>
         </div>
 
         <div class="footer">
-            <div>1 Device · 1 Key · 24h © 2025 | ZimHackerVip</div>
+            <div>Get Auth Key © 2025 | Made By ZimHackerVip</div>
             <div class="security-badge"><i class="fas fa-shield-alt"></i><span>Secure Connection</span></div>
         </div>
     </div>
@@ -404,47 +340,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script>
-        // ==================== DEVICE ID (fingerprint) ====================
-        function generateDeviceId() {
-            try {
-                const nav = window.navigator;
-                const scr = window.screen;
-                const props = [
-                    nav.userAgent, nav.language, nav.platform,
-                    nav.hardwareConcurrency || 'unknown',
-                    scr.colorDepth, scr.pixelDepth,
-                    scr.width + 'x' + scr.height,
-                    scr.availWidth + 'x' + scr.availHeight,
-                    new Date().getTimezoneOffset(),
-                    !!window.sessionStorage, !!window.localStorage,
-                    !!window.indexedDB, nav.maxTouchPoints || 0,
-                    nav.deviceMemory || 'unknown'
-                ].join('|');
-
-                let hash = 2166136261;
-                for (let i = 0; i < props.length; i++) {
-                    hash ^= props.charCodeAt(i);
-                    hash = (hash * 16777619) >>> 0;
-                }
-                const hex = hash.toString(16).padStart(8, '0');
-
-                let hash2 = 5381;
-                for (let i = 0; i < props.length; i++) {
-                    hash2 = ((hash2 << 5) + hash2) + props.charCodeAt(i);
-                    hash2 = hash2 >>> 0;
-                }
-                const hex2 = hash2.toString(16).padStart(8, '0');
-                const combined = (hex + hex2).substring(0, 16).toUpperCase();
-                return combined.match(/.{1,4}/g).join('-');
-            } catch (e) {
-                return 'DEV-' + Math.random().toString(36).substring(2, 10).toUpperCase();
-            }
-        }
-
-        const DEVICE_ID = generateDeviceId();
-        document.getElementById('deviceHash').textContent = DEVICE_ID;
-
-        // ==================== FIREBASE ====================
         const firebaseConfig = {
             apiKey: "AIzaSyCYPCEfGqVWpBUU5yZF0licd8kKoynOvQM",
             authDomain: "zim-hacker-vip-e94a7.firebaseapp.com",
@@ -459,13 +354,12 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // DOM
+        // DOM REFS
         const receiveBadge = document.getElementById('receiveBadge');
         const receiveText = document.getElementById('receiveText');
         const authKeyBox = document.getElementById('authKeyBox');
         const authKey = document.getElementById('authKey');
         const copyBtn = document.getElementById('copyBtn');
-        const newKeyBtn = document.getElementById('newKeyBtn');
         const contactAdminBtn = document.getElementById('contactAdminBtn');
         const contactAdminSection = document.getElementById('contactAdminSection');
         const progressBar = document.getElementById('progressBar');
@@ -476,7 +370,38 @@
         const expiredOverlay = document.getElementById('expiredOverlay');
         const expiryTimeElement = document.getElementById('expiryTime');
         const generatedTimeElement = document.getElementById('generatedTime');
-        const deviceCountEl = document.getElementById('deviceCount');
+
+        // ===== DEVICE ID MANAGEMENT =====
+        function getDeviceId() {
+            let deviceId = localStorage.getItem('zim_device_id');
+            if (!deviceId) {
+                // Build a stable device fingerprint
+                const components = [
+                    navigator.userAgent || 'na',
+                    navigator.language || 'na',
+                    (screen.width || 0) + 'x' + (screen.height || 0),
+                    screen.colorDepth || 0,
+                    new Date().getTimezoneOffset(),
+                    navigator.hardwareConcurrency || 'na',
+                    navigator.platform || 'na'
+                ];
+                const raw = components.join('|');
+                // Simple hash
+                let hash = 0;
+                for (let i = 0; i < raw.length; i++) {
+                    const char = raw.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash;
+                }
+                const randomPart = Math.random().toString(36).substr(2, 6).toUpperCase();
+                deviceId = 'DEV-' + Math.abs(hash).toString(36).toUpperCase() + '-' + randomPart;
+                localStorage.setItem('zim_device_id', deviceId);
+            }
+            return deviceId;
+        }
+
+        const DEVICE_ID = getDeviceId();
+        console.log('[Zim] Device ID:', DEVICE_ID);
 
         // STATE
         let currentKey = null;
@@ -486,7 +411,9 @@
         let lastProcessedSentAt = null;
         let autoCopyDone = false;
         let requestInProgress = false;
-        let keyExpired = false;
+        let deviceLocked = false;
+        let currentAccessType = '1';
+        let currentRegisteredDevice = 'null';
 
         // ===== HELPERS =====
         function formatDate(date) {
@@ -527,18 +454,18 @@
 
         function resetUI() {
             if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
-            currentKey = null; keyExpiresAt = null; keyGeneratedAt = null; autoCopyDone = false; keyExpired = false;
+            currentKey = null; keyExpiresAt = null; keyGeneratedAt = null; autoCopyDone = false;
+            deviceLocked = false;
 
             authKey.textContent = '—';
-            authKey.classList.remove('expired', 'received');
-            authKeyBox.classList.remove('expired', 'shake', 'received');
+            authKey.classList.remove('expired', 'received', 'locked');
+            authKeyBox.classList.remove('expired', 'shake', 'received', 'locked');
             authKeyBox.classList.add('pulse');
             expiredOverlay.classList.remove('show');
 
             copyBtn.disabled = true;
-            copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy My Device Key';
+            copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Panel Login Key';
             copyBtn.classList.remove('copied');
-            newKeyBtn.classList.add('hidden');
 
             contactAdminBtn.style.display = 'none';
             contactAdminSection.classList.remove('show');
@@ -546,58 +473,61 @@
             generatedTimeElement.textContent = '—';
             expiryTimeElement.textContent = '—';
             progressBar.style.width = '0%';
-            progressBar.classList.remove('expired');
+            progressBar.classList.remove('expired', 'locked');
             countdownElement.textContent = 'No key loaded';
             countdownElement.style.color = '';
 
             setStatus('pending', 'fas fa-hourglass-half', 'Waiting for key...');
         }
 
-        // ===== PUBLIC DEVICE REGISTRATION (once per device) =====
-        function registerDevicePublic() {
-            const deviceRef = db.ref('publicDevices/' + DEVICE_ID);
-            deviceRef.once('value').then((snap) => {
-                const now = formatToStoredDateTime(new Date());
-                if (!snap.exists()) {
-                    deviceRef.set({
-                        deviceId: DEVICE_ID,
-                        firstSeen: now,
-                        lastSeen: now,
-                        userAgent: navigator.userAgent.substring(0, 120)
-                    });
-                } else {
-                    deviceRef.update({ lastSeen: now });
-                }
-            });
+        // ===== DEVICE LOCK UI =====
+        function showDeviceLockedUI(registeredDevice) {
+            deviceLocked = true;
+            if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+
+            setStatus('locked', 'fas fa-mobile-alt', 'This key is locked to another device!');
+            setReceiveBadge('locked', '❌ Device mismatch — key is bound to a different device');
+            authKey.textContent = '🔒 LOCKED';
+            authKey.classList.add('locked');
+            authKeyBox.classList.remove('pulse', 'received');
+            authKeyBox.classList.add('locked', 'shake');
+
+            copyBtn.disabled = true;
+            copyBtn.innerHTML = '<i class="fas fa-lock"></i> Device Locked';
+            contactAdminBtn.style.display = 'flex';
+            contactAdminSection.classList.add('show');
+            contactAdminSection.querySelector('h3').innerHTML = '<i class="fas fa-mobile-alt"></i> Device Locked';
+            contactAdminSection.querySelector('p').textContent = 'This key is already registered to another device. Please contact the administrator to reset the device binding.';
+
+            progressBar.style.width = '100%';
+            progressBar.classList.add('locked');
+            countdownElement.textContent = 'Device Mismatch';
+            countdownElement.style.color = 'var(--warning)';
+
+            // Clear local storage so refresh doesn't loop
+            localStorage.removeItem('zim_current_key');
+            localStorage.removeItem('zim_key_expires');
         }
 
-        // ===== REQUEST KEY (only if no active key exists) =====
-        function requestKeyFromAdmin(isRenewal = false) {
+        // ===== REQUEST KEY FROM ADMIN =====
+        function requestKeyFromAdmin() {
             if (requestInProgress) return;
             requestInProgress = true;
 
-            registerDevicePublic();
-
             const requestId = 'req-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 
-            setReceiveBadge('requesting', isRenewal ? 'Requesting new 24h key...' : 'Sending request to admin...');
-            setStatus('requesting', 'fas fa-paper-plane', isRenewal ? 'Requesting new key...' : 'Request sent to admin...');
+            setReceiveBadge('requesting', 'Sending request to admin...');
+            setStatus('requesting', 'fas fa-paper-plane', 'Request sent to admin...');
 
-            const requestData = {
+            db.ref('keyRequest').set({
                 requestId: requestId,
-                deviceId: DEVICE_ID,
                 requestedAt: formatToStoredDateTime(new Date()),
                 timestamp: Date.now(),
                 status: 'pending',
-                renewal: !!isRenewal,
+                deviceId: DEVICE_ID,
                 userAgent: navigator.userAgent.substring(0, 100)
-            };
-
-            Promise.all([
-                db.ref('keyRequest').set(requestData),
-                db.ref('deviceRequests/' + DEVICE_ID).set(requestData)
-            ]).then(() => {
-                setReceiveBadge('requesting', '⏳ Request sent! Admin will assign your key...');
+            }).then(() => {
+                setReceiveBadge('requesting', '⏳ Request sent! Admin will respond shortly...');
                 setStatus('requesting', 'fas fa-spinner fa-spin', 'Waiting for admin...');
             }).catch((error) => {
                 console.error('Request error:', error);
@@ -622,46 +552,76 @@
 
                 copyBtn.classList.add('copied');
                 copyBtn.innerHTML = '<i class="fas fa-check"></i> Auto-Copied!';
-                setReceiveBadge('success', '✓ Your device key received & copied!');
+                setReceiveBadge('success', '✓ Key received & auto-copied!');
 
                 setTimeout(() => {
                     copyBtn.classList.remove('copied');
-                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy My Device Key';
+                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Panel Login Key';
                 }, 3000);
             } catch (e) { console.log('Auto-copy failed:', e); }
         }
 
-        // ===== LOAD KEY (per-device, SAME key for 24h) =====
+        // ===== APPLY KEY TO UI (shared for load & restore) =====
+        function applyKeyToUI(username, data) {
+            currentKey = username;
+            currentAccessType = data.access || '1';
+            currentRegisteredDevice = data.device || 'null';
+
+            keyExpiresAt = parseStoredDateTime(data.validity || '');
+            keyGeneratedAt = parseStoredDateTime(data.rgtime || '') || new Date();
+
+            authKey.textContent = username;
+            authKey.classList.add('received');
+            authKey.classList.remove('expired', 'locked');
+            authKeyBox.classList.remove('expired', 'shake', 'locked');
+            authKeyBox.classList.add('pulse', 'received');
+            setTimeout(() => authKeyBox.classList.remove('received'), 2000);
+            expiredOverlay.classList.remove('show');
+
+            generatedTimeElement.textContent = formatDate(keyGeneratedAt);
+            expiryTimeElement.textContent = formatDate(keyExpiresAt);
+
+            if (currentAccessType === '1') {
+                setStatus('', 'fas fa-check-circle', 'Key active on this device ✓');
+                setReceiveBadge('success', '✓ Key active: ' + username);
+            } else {
+                setStatus('', 'fas fa-check-circle', 'Key active (Unlimited devices)');
+                setReceiveBadge('success', '✓ Key active: ' + username);
+            }
+
+            copyBtn.disabled = false;
+            copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Panel Login Key';
+            contactAdminBtn.style.display = 'none';
+            contactAdminSection.classList.remove('show');
+
+            // Reset contact section content for future uses
+            contactAdminSection.querySelector('h3').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Key Expired';
+            contactAdminSection.querySelector('p').textContent = 'Your Panel Login key has expired. Please contact the administrator to request a new key.';
+
+            if (countdownInterval) clearInterval(countdownInterval);
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+            authKeyBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Save to localStorage for refresh persistence
+            localStorage.setItem('zim_current_key', username);
+            if (keyExpiresAt) localStorage.setItem('zim_key_expires', keyExpiresAt.toISOString());
+            localStorage.setItem('zim_key_device', currentRegisteredDevice);
+
+            // Auto copy
+            autoCopyDone = false;
+            setTimeout(() => autoCopyKey(username), 500);
+        }
+
+        // ===== LOAD KEY SENT BY ADMIN =====
         function loadSentKey(sentData) {
             const username = sentData.username;
             const sentAt = sentData.sentAt || '';
-
-            // ⭐ SAME KEY PROTECTION: if same key already loaded, skip            if (currentKey === username && keyExpiresAt && keyExpiresAt > new Date()) {
-                // Already have this key, just refresh countdown
-                return;
-            }
-
             if (sentAt === lastProcessedSentAt && currentKey === username) return;
             lastProcessedSentAt = sentAt;
 
             requestInProgress = false;
-
-            // ⭐ Strict per-device check
-            if (sentData.deviceId && sentData.deviceId !== DEVICE_ID) {
-                setReceiveBadge('error', '⚠️ This key belongs to another device!');
-                setStatus('expired', 'fas fa-ban', 'Key belongs to a different device.');
-                authKey.textContent = '—';
-                authKey.classList.add('expired');
-                authKeyBox.classList.add('expired');
-                copyBtn.disabled = true;
-                copyBtn.innerHTML = '<i class="fas fa-ban"></i> Device Mismatch';
-                newKeyBtn.classList.add('hidden');
-                contactAdminBtn.style.display = 'flex';
-                contactAdminSection.classList.add('show');
-                return;
-            }
-
-            setReceiveBadge('success', 'Key received: ' + username);
+            setReceiveBadge('success', 'Key received from admin: ' + username);
 
             db.ref('userinfo/' + username).once('value').then((snapshot) => {
                 if (!snapshot.exists()) {
@@ -670,50 +630,19 @@
                 }
 
                 const data = snapshot.val();
-
-                // ⭐ Strict per-device check on userinfo
-                if (data.deviceId && data.deviceId !== DEVICE_ID) {
-                    setReceiveBadge('error', '⚠️ Key already bound to another device!');
-                    setStatus('expired', 'fas fa-ban', 'This key is registered to another device.');
-                    authKey.textContent = username;
-                    authKey.classList.add('expired');
-                    authKeyBox.classList.remove('pulse');
-                    authKeyBox.classList.add('expired');
-                    copyBtn.disabled = true;
-                    copyBtn.innerHTML = '<i class="fas fa-ban"></i> Device Locked';
-                    newKeyBtn.classList.add('hidden');
-                    contactAdminBtn.style.display = 'flex';
-                    contactAdminSection.classList.add('show');
-                    return;
-                }
-
                 const status = data.status || 'inactive';
-                let validityDate = parseStoredDateTime(data.validity || '');
+                const validityDate = parseStoredDateTime(data.validity || '');
                 const generatedDate = parseStoredDateTime(data.rgtime || '');
 
-                // ⭐ 24h max
-                let finalExpiry;
-                let finalGenerated = generatedDate || new Date();
-                if (generatedDate) {
-                    const maxExpiry = new Date(generatedDate.getTime() + 24 * 60 * 60 * 1000);
-                    if (validityDate && validityDate < maxExpiry) {
-                        finalExpiry = validityDate;
-                    } else {
-                        finalExpiry = maxExpiry;
-                    }
-                } else {
-                    finalExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
-                }
-
-                if (!finalExpiry || isNaN(finalExpiry.getTime())) {
-                    setStatus('expired', 'fas fa-exclamation-circle', 'Invalid validity');
-                    return;
-                }
+                if (!validityDate) { setStatus('expired', 'fas fa-exclamation-circle', 'Invalid validity'); return; }
 
                 currentKey = username;
-                keyExpiresAt = finalExpiry;
-                keyGeneratedAt = finalGenerated;
+                currentAccessType = data.access || '1';
+                currentRegisteredDevice = data.device || 'null';
+                keyExpiresAt = validityDate;
+                keyGeneratedAt = generatedDate || new Date();
 
+                // ===== STATUS CHECK =====
                 if (status !== 'active') {
                     setStatus('expired', 'fas fa-ban', 'Key is inactive. Contact admin.');
                     authKey.textContent = username;
@@ -724,13 +653,14 @@
                     expiryTimeElement.textContent = formatDate(keyExpiresAt);
                     copyBtn.disabled = true;
                     copyBtn.innerHTML = '<i class="fas fa-ban"></i> Key Inactive';
-                    newKeyBtn.classList.add('hidden');
+                    localStorage.removeItem('zim_current_key');
+                    localStorage.removeItem('zim_key_expires');
                     return;
                 }
 
+                // ===== EXPIRY CHECK =====
                 if (keyExpiresAt <= new Date()) {
-                    keyExpired = true;
-                    setStatus('expired', 'fas fa-exclamation-circle', 'Key expired (24h). Get new key.');
+                    setStatus('expired', 'fas fa-exclamation-circle', 'Key has expired');
                     authKey.textContent = username;
                     authKey.classList.add('expired');
                     authKeyBox.classList.remove('pulse');
@@ -740,42 +670,43 @@
                     expiredOverlay.classList.add('show');
                     copyBtn.disabled = true;
                     copyBtn.innerHTML = '<i class="fas fa-ban"></i> Key Expired';
-                    newKeyBtn.classList.remove('hidden');
                     contactAdminBtn.style.display = 'flex';
                     contactAdminSection.classList.add('show');
                     progressBar.style.width = '0%';
                     progressBar.classList.add('expired');
                     countdownElement.textContent = 'Expired';
                     countdownElement.style.color = 'var(--danger)';
+                    localStorage.removeItem('zim_current_key');
+                    localStorage.removeItem('zim_key_expires');
                     return;
                 }
 
-                // ===== VALID KEY =====
-                keyExpired = false;
-                authKey.textContent = username;
-                authKey.classList.add('received');
-                authKeyBox.classList.remove('expired', 'shake');
-                authKeyBox.classList.add('pulse', 'received');
-                setTimeout(() => authKeyBox.classList.remove('received'), 2000);
-                expiredOverlay.classList.remove('show');
+                // ===== DEVICE ACCESS CHECK =====
+                if (currentAccessType === '1') {
+                    const registered = data.device || 'null';
+                    if (registered === 'null' || registered === '' || !registered) {
+                        // First use — register this device
+                        db.ref('userinfo/' + username).update({ device: DEVICE_ID })
+                            .then(() => {
+                                console.log('[Zim] Device registered:', DEVICE_ID);
+                                currentRegisteredDevice = DEVICE_ID;
+                                applyKeyToUI(username, { ...data, device: DEVICE_ID });
+                            })
+                            .catch(err => {
+                                console.error('Device register error:', err);
+                                applyKeyToUI(username, data);
+                            });
+                        return;
+                    } else if (registered !== DEVICE_ID) {
+                        // Different device — block
+                        console.warn('[Zim] Device mismatch. Registered:', registered, 'Current:', DEVICE_ID);
+                        showDeviceLockedUI(registered);
+                        return;
+                    }
+                }
 
-                generatedTimeElement.textContent = formatDate(keyGeneratedAt);
-                expiryTimeElement.textContent = formatDate(keyExpiresAt);
-                setStatus('', 'fas fa-check-circle', 'Your device key is active (24h).');
-                setReceiveBadge('success', '✓ Device key active · same key for 24h');
-
-                copyBtn.disabled = false;
-                copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy My Device Key';
-                newKeyBtn.classList.add('hidden');
-                contactAdminBtn.style.display = 'none';
-                contactAdminSection.classList.remove('show');
-
-                if (countdownInterval) clearInterval(countdownInterval);
-                updateCountdown();
-                countdownInterval = setInterval(updateCountdown, 1000);
-                authKeyBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-                setTimeout(() => autoCopyKey(username), 500);
+                // ===== VALID KEY! =====
+                applyKeyToUI(username, data);
             }).catch((error) => {
                 console.error('Firebase error:', error);
                 setStatus('expired', 'fas fa-exclamation-circle', 'Error: ' + error.message);
@@ -792,37 +723,38 @@
             if (remaining > 0) {
                 const percent = Math.max(0, (remaining / total) * 100);
                 progressBar.style.width = percent + '%';
-                progressBar.classList.remove('expired');
+                progressBar.classList.remove('expired', 'locked');
                 const hours = Math.floor(remaining / (1000 * 60 * 60));
                 const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
                 countdownElement.textContent = `${hours}h ${minutes}m ${seconds}s remaining`;
                 countdownElement.style.color = '';
-                keyExpired = false;
             } else {
-                keyExpired = true;
                 progressBar.style.width = '0%';
                 progressBar.classList.add('expired');
-                countdownElement.textContent = 'Expired (24h)';
+                countdownElement.textContent = 'Expired';
                 countdownElement.style.color = 'var(--danger)';
                 copyBtn.disabled = true;
                 copyBtn.innerHTML = '<i class="fas fa-ban"></i> Key Expired';
-                newKeyBtn.classList.remove('hidden');
                 contactAdminBtn.style.display = 'flex';
                 contactAdminSection.classList.add('show');
-                setStatus('expired', 'fas fa-exclamation-circle', 'Key expired (24h). Get new key.');
-                setReceiveBadge('error', 'Key expired · request new key');
+                contactAdminSection.querySelector('h3').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Key Expired';
+                contactAdminSection.querySelector('p').textContent = 'Your Panel Login key has expired. Please contact the administrator to request a new key.';
+                setStatus('expired', 'fas fa-exclamation-circle', 'Key has expired');
+                setReceiveBadge('error', 'Key has expired');
                 authKeyBox.classList.remove('pulse');
                 authKeyBox.classList.add('expired', 'shake');
                 authKey.classList.add('expired');
                 setTimeout(() => expiredOverlay.classList.add('show'), 500);
                 if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+                localStorage.removeItem('zim_current_key');
+                localStorage.removeItem('zim_key_expires');
             }
         }
 
         // ===== BUTTON EVENTS =====
         copyBtn.addEventListener('click', function() {
-            if (!currentKey) return;
+            if (!currentKey || deviceLocked) return;
             const textArea = document.createElement('textarea');
             textArea.value = currentKey;
             textArea.style.position = 'fixed';
@@ -841,85 +773,88 @@
             }, 2000);
         });
 
-        // ⭐ NEW KEY: only when expired
-        newKeyBtn.addEventListener('click', function() {
-            if (requestInProgress) return;
-
-            resetUI();
-            keyExpired = false;
-            lastProcessedSentAt = null;
-
-            db.ref('sentKey').remove().then(() => {
-                setTimeout(() => {
-                    requestKeyFromAdmin(true);
-                }, 300);
-            }).catch((err) => {
-                console.error('Failed to clear old key:', err);
-                requestKeyFromAdmin(true);
-            });
-        });
-
         contactAdminBtn.addEventListener('click', function(e) {
             e.preventDefault();
             contactAdminSection.scrollIntoView({ behavior: 'smooth' });
         });
 
-        // ===== LIVE DEVICE COUNTER =====
-        function initDeviceCounter() {
-            db.ref('publicDevices').on('value', (snap) => {
-                const count = snap.numChildren();
-                deviceCountEl.textContent = count;
-            });
+        // ===== RESTORE FROM LOCALSTORAGE ON REFRESH =====
+        function tryRestoreSession() {
+            const savedKey = localStorage.getItem('zim_current_key');
+            const savedExpiry = localStorage.getItem('zim_key_expires');
+            const savedDevice = localStorage.getItem('zim_key_device');
+
+            if (!savedKey || !savedExpiry) return false;
+
+            const expiryDate = new Date(savedExpiry);
+            if (isNaN(expiryDate.getTime()) || expiryDate <= new Date()) {
+                localStorage.removeItem('zim_current_key');
+                localStorage.removeItem('zim_key_expires');
+                localStorage.removeItem('zim_key_device');
+                return false;
+            }
+
+            // Verify against Firebase
+            db.ref('userinfo/' + savedKey).once('value').then((snap) => {
+                if (!snap.exists()) {
+                    localStorage.removeItem('zim_current_key');
+                    localStorage.removeItem('zim_key_expires');
+                    return;
+                }
+                const data = snap.val();
+                if (data.status !== 'active') {
+                    localStorage.removeItem('zim_current_key');
+                    localStorage.removeItem('zim_key_expires');
+                    return;
+                }
+
+                // Device access validation
+                const accessType = data.access || '1';
+                const registeredDevice = data.device || 'null';
+
+                if (accessType === '1') {
+                    if (registeredDevice !== 'null' && registeredDevice !== '' && registeredDevice !== DEVICE_ID) {
+                        // Locked to another device
+                        currentKey = savedKey;
+                        showDeviceLockedUI(registeredDevice);
+                        return;
+                    }
+                    if (registeredDevice === 'null' || registeredDevice === '') {
+                        // First registration
+                        db.ref('userinfo/' + savedKey).update({ device: DEVICE_ID });
+                    }
+                }
+
+                // Restore UI
+                lastProcessedSentAt = savedKey + '_restored';
+                applyKeyToUI(savedKey, data);
+                setReceiveBadge('success', '✓ Key restored: ' + savedKey);
+            }).catch(err => console.error('Restore error:', err));
+
+            return true;
         }
 
         // ===== INIT =====
         function init() {
             resetUI();
-            registerDevicePublic();
-            initDeviceCounter();
 
-            // ⭐ PRIMARY: Device-specific key listener (each device has own key)
-            db.ref('deviceKeys/' + DEVICE_ID).on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data && data.username && data.sentAt) {
-                    loadSentKey(data);
-                }
-            });
+            // 1) Try to restore from localStorage first (refresh case)
+            const restored = tryRestoreSession();
 
-            // Fallback: global sentKey (only if matching deviceId)
+            // 2) Listen to sentKey — admin writes here after processing request
             db.ref('sentKey').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data && data.username && data.sentAt) {
-                    if (!data.deviceId || data.deviceId === DEVICE_ID) {
-                        loadSentKey(data);
+                    loadSentKey(data);
+                } else {
+                    // Only reset if we don't have a restored session
+                    if (currentKey && !restored) {
+                        resetUI();
                     }
                 }
             });
 
-            // ⭐ CHECK EXISTING KEY FIRST (refresh-safe)
-            // If this device already has a key in deviceKeys, use it
-            db.ref('deviceKeys/' + DEVICE_ID).once('value').then((snap) => {
-                const existing = snap.val();
-                if (existing && existing.username) {
-                    // Device already has a key → just load it, don't request
-                    loadSentKey(existing);
-                } else {
-                    // No key yet → check deviceRequests for pending
-                    db.ref('deviceRequests/' + DEVICE_ID).once('value').then((reqSnap) => {
-                        const req = reqSnap.val();
-                        if (req && req.status === 'pending') {
-                            // Already requested, wait
-                            setReceiveBadge('requesting', '⏳ Request already sent. Waiting...');
-                            setStatus('requesting', 'fas fa-spinner fa-spin', 'Waiting for admin...');
-                        } else {
-                            // No key, no request → auto request
-                            setTimeout(() => requestKeyFromAdmin(false), 800);
-                        }
-                    });
-                }
-            });
-
-            // Listen to keyRequest status changes
+            // 3) Listen to keyRequest status changes
             db.ref('keyRequest').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data && data.status === 'processing') {
@@ -930,30 +865,57 @@
                 }
             });
 
-            // Listen for updates on current key
+            // 4) Listen for updates on current key (device reset, status change, validity change)
             db.ref('userinfo').on('child_changed', (snapshot) => {
                 const username = snapshot.key;
-                if (username === currentKey) {
-                    const data = snapshot.val();
-                    const validityDate = parseStoredDateTime(data.validity || '');
-                    if (validityDate) {
-                        if (keyGeneratedAt) {
-                            const maxExpiry = new Date(keyGeneratedAt.getTime() + 24 * 60 * 60 * 1000);
-                            keyExpiresAt = (validityDate < maxExpiry) ? validityDate : maxExpiry;
-                        } else {
-                            keyExpiresAt = validityDate;
-                        }
-                        if (keyExpiresAt <= new Date()) updateCountdown();
+                if (username !== currentKey) return;
+
+                const data = snapshot.val();
+
+                // Admin reset device → re-register current device
+                if (data.device === 'null' || data.device === '') {
+                    if ((data.access || '1') === '1') {
+                        db.ref('userinfo/' + username).update({ device: DEVICE_ID })
+                            .then(() => {
+                                deviceLocked = false;
+                                currentRegisteredDevice = DEVICE_ID;
+                                setStatus('', 'fas fa-check-circle', 'Device re-registered ✓');
+                                setReceiveBadge('success', '✓ Device reset by admin — re-registered');
+                            });
                     }
-                    if (data.status !== 'active') {
-                        setStatus('expired', 'fas fa-ban', 'Key deactivated by admin');
-                        authKey.classList.add('expired');
-                        copyBtn.disabled = true;
-                        copyBtn.innerHTML = '<i class="fas fa-ban"></i> Key Inactive';
-                        newKeyBtn.classList.remove('hidden');
-                    }
+                    return;
+                }
+
+                // Device mismatch on a one-device key
+                if ((data.access || '1') === '1' && data.device && data.device !== 'null' && data.device !== DEVICE_ID) {
+                    showDeviceLockedUI(data.device);
+                    return;
+                }
+
+                // Validity / status updates
+                const validityDate = parseStoredDateTime(data.validity || '');
+                if (validityDate) {
+                    keyExpiresAt = validityDate;
+                    expiryTimeElement.textContent = formatDate(validityDate);
+                    if (keyExpiresAt <= new Date()) updateCountdown();
+                }
+
+                if (data.status !== 'active') {
+                    setStatus('expired', 'fas fa-ban', 'Key deactivated by admin');
+                    authKey.classList.add('expired');
+                    copyBtn.disabled = true;
+                    copyBtn.innerHTML = '<i class="fas fa-ban"></i> Key Inactive';
+                    localStorage.removeItem('zim_current_key');
+                    localStorage.removeItem('zim_key_expires');
                 }
             });
+
+            // 5) AUTO-SEND REQUEST ON PAGE LOAD (only if no existing session)
+            if (!restored) {
+                setTimeout(() => {
+                    requestKeyFromAdmin();
+                }, 800);
+            }
         }
 
         init();
