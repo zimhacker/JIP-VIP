@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Auth Key | Alienkrishn</title>
+    <title>1 Device · 1 Key · 24h</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
@@ -19,7 +19,7 @@
             align-items: center; padding: 20px; color: var(--light);
         }
         .container {
-            width: 100%; max-width: 520px;
+            width: 100%; max-width: 560px;
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px); border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -73,7 +73,6 @@
         .auth-key.received { color: var(--success); }
         .auth-key.expired { color: var(--danger); filter: blur(5px); user-select: none; }
 
-        /* REQUEST STATUS BADGE */
         .receive-badge {
             display: flex; align-items: center; gap: 8px;
             padding: 12px 16px; border-radius: 10px;
@@ -129,6 +128,17 @@
         .copy-btn.copied {
             background: var(--success) !important;
             box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5) !important;
+        }
+        .new-key-btn {
+            background: var(--success); color: white; border: none;
+            border-radius: 10px; padding: 14px 28px; font-size: 16px;
+            font-weight: 600; cursor: pointer; transition: all 0.3s ease;
+            display: flex; align-items: center; gap: 10px; white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .new-key-btn:hover {
+            background: #059669; transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
         }
         .contact-admin-btn {
             background: var(--warning); color: white; border: none;
@@ -218,14 +228,54 @@
             display: flex; align-items: center; gap: 8px; text-decoration: none;
         }
         .youtube-btn:hover { background: #e60000; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4); }
+
+        .device-id-badge {
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 10px; padding: 12px 16px; margin-bottom: 16px;
+            font-size: 13px; display: flex; align-items: center; gap: 10px;
+            color: var(--primary-light); flex-wrap: wrap;
+        }
+        .device-id-badge i { font-size: 16px; }
+        .device-id-badge .device-hash {
+            font-family: 'Courier New', monospace; letter-spacing: 1px;
+            background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 6px;
+            font-weight: 600; color: #cbd5e1;
+        }
+        .one-device-lock {
+            color: var(--warning); font-size: 12px; margin-left: auto;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .validity-badge {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px; padding: 8px 12px; margin-bottom: 16px;
+            font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px;
+            color: var(--success);
+        }
+        .validity-badge i { font-size: 14px; }
+        .devices-counter {
+            background: rgba(139, 92, 246, 0.12);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
+            font-size: 13px; display: flex; align-items: center; gap: 10px;
+            color: var(--primary-light);
+        }
+        .devices-counter .count-badge {
+            background: var(--primary);
+            color: white; font-weight: 700; padding: 2px 10px;
+            border-radius: 20px; font-size: 12px; margin-left: auto;
+        }
+
         @media (max-width: 580px) {
             .info-section { flex-direction: column; gap: 15px; }
             .auth-key { font-size: 16px; }
             .footer { flex-direction: column; gap: 10px; }
             .button-container { flex-direction: column; align-items: center; }
-            .copy-btn, .contact-admin-btn { width: 100%; justify-content: center; }
+            .copy-btn, .contact-admin-btn, .new-key-btn { width: 100%; justify-content: center; }
             .contact-links { flex-direction: column; }
             .telegram-btn, .youtube-btn { width: 100%; justify-content: center; }
+            .one-device-lock { margin-left: 0; width: 100%; }
         }
         .pulse { animation: pulse 2s infinite; }
         @keyframes pulse {
@@ -243,6 +293,7 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -250,36 +301,58 @@
         <div class="header">
             <div class="header-content">
                 <div class="logo"><i class="fas fa-key"></i></div>
-                <h1>Get Login Key</h1>
-                <p>Your secure authentication key</p>
+                <h1>1 Device · 1 Key</h1>
+                <p>Your key stays the same for 24h · Refresh safe</p>
             </div>
         </div>
 
         <div class="content">
-            <!-- REQUEST STATUS BADGE (no button) -->
-            <div class="receive-badge waiting" id="receiveBadge">
-                <span class="pulse-dot"></span>
-                <span id="receiveText">Ready to request key from admin...</span>
+            <!-- DEVICE ID -->
+            <div class="device-id-badge" id="deviceIdBadge">
+                <i class="fas fa-fingerprint"></i>
+                <span>Your Device ID: <span class="device-hash" id="deviceHash">—</span></span>
+                <span class="one-device-lock"><i class="fas fa-lock"></i> 1‑Device</span>
             </div>
 
-            <!-- NO REQUEST BUTTON — auto request only -->
+            <!-- DEVICES COUNTER -->
+            <div class="devices-counter">
+                <i class="fas fa-globe"></i>
+                <span>Registered devices</span>
+                <span class="count-badge" id="deviceCount">0</span>
+            </div>
+
+            <!-- VALIDITY -->
+            <div class="validity-badge">
+                <i class="fas fa-clock"></i>
+                <span>Same key for <strong>24 hours</strong> · Refresh safe</span>
+            </div>
+
+            <!-- REQUEST STATUS -->
+            <div class="receive-badge waiting" id="receiveBadge">
+                <span class="pulse-dot"></span>
+                <span id="receiveText">Checking for your registered key...</span>
+            </div>
 
             <div class="auth-key-section">
                 <div class="section-title">
                     <i class="fas fa-user-lock"></i>
-                    Your Panel Login Key
+                    Your Device Key (Locked for 24h)
                 </div>
                 <div class="auth-key-box" id="authKeyBox">
                     <div class="auth-key" id="authKey">—</div>
                     <div class="expired-overlay" id="expiredOverlay">
                         <i class="fas fa-ban"></i>
-                        <div>Key Expired - Admin Contact</div>
+                        <div>Key Expired - Get New Key</div>
                     </div>
                 </div>
                 <div class="button-container">
                     <button class="copy-btn" id="copyBtn" disabled>
                         <i class="fas fa-copy"></i>
-                        Copy Panel Login Key
+                        Copy My Device Key
+                    </button>
+                    <button class="new-key-btn hidden" id="newKeyBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        Get New Key (24h)
                     </button>
                     <a href="#" class="contact-admin-btn" id="contactAdminBtn" style="display: none;">
                         <i class="fas fa-headset"></i>
@@ -301,7 +374,7 @@
 
             <div class="progress-container">
                 <div class="progress-label">
-                    <span>Key Validity</span>
+                    <span>Key Validity (24h)</span>
                     <span id="countdown">No key loaded</span>
                 </div>
                 <div class="progress-bar"><div class="progress" id="progressBar"></div></div>
@@ -314,16 +387,16 @@
 
             <div class="contact-admin-section" id="contactAdminSection">
                 <h3><i class="fas fa-exclamation-triangle"></i> Key Expired</h3>
-                <p>Your Panel Login key has expired. Please contact the administrator to request a new key.</p>
+                <p>Your 24‑hour key has expired. Click <strong>"Get New Key"</strong> to generate a fresh key for this device, or contact the administrator.</p>
                 <div class="contact-links">
-                    <a href="https://t.me/ZimHackerVip" target="_blank" class="telegram-btn"><i class="fab fa-telegram"></i> Admin Contact Telegram</a>
+                    <a href="https://t.me/ZimHackerVip" target="_blank" class="telegram-btn"><i class="fab fa-telegram"></i> Admin Telegram</a>
                     <a href="https://www.youtube.com/channel/UCJ5d_D9V271-gizYZfUppUw" target="_blank" class="youtube-btn"><i class="fab fa-youtube"></i> YouTube Channel</a>
                 </div>
             </div>
         </div>
 
         <div class="footer">
-            <div>Get Auth Key © 2025 | Made By ZimHackerVip</div>
+            <div>1 Device · 1 Key · 24h © 2025 | ZimHackerVip</div>
             <div class="security-badge"><i class="fas fa-shield-alt"></i><span>Secure Connection</span></div>
         </div>
     </div>
@@ -331,6 +404,47 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script>
+        // ==================== DEVICE ID (fingerprint) ====================
+        function generateDeviceId() {
+            try {
+                const nav = window.navigator;
+                const scr = window.screen;
+                const props = [
+                    nav.userAgent, nav.language, nav.platform,
+                    nav.hardwareConcurrency || 'unknown',
+                    scr.colorDepth, scr.pixelDepth,
+                    scr.width + 'x' + scr.height,
+                    scr.availWidth + 'x' + scr.availHeight,
+                    new Date().getTimezoneOffset(),
+                    !!window.sessionStorage, !!window.localStorage,
+                    !!window.indexedDB, nav.maxTouchPoints || 0,
+                    nav.deviceMemory || 'unknown'
+                ].join('|');
+
+                let hash = 2166136261;
+                for (let i = 0; i < props.length; i++) {
+                    hash ^= props.charCodeAt(i);
+                    hash = (hash * 16777619) >>> 0;
+                }
+                const hex = hash.toString(16).padStart(8, '0');
+
+                let hash2 = 5381;
+                for (let i = 0; i < props.length; i++) {
+                    hash2 = ((hash2 << 5) + hash2) + props.charCodeAt(i);
+                    hash2 = hash2 >>> 0;
+                }
+                const hex2 = hash2.toString(16).padStart(8, '0');
+                const combined = (hex + hex2).substring(0, 16).toUpperCase();
+                return combined.match(/.{1,4}/g).join('-');
+            } catch (e) {
+                return 'DEV-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+            }
+        }
+
+        const DEVICE_ID = generateDeviceId();
+        document.getElementById('deviceHash').textContent = DEVICE_ID;
+
+        // ==================== FIREBASE ====================
         const firebaseConfig = {
             apiKey: "AIzaSyCYPCEfGqVWpBUU5yZF0licd8kKoynOvQM",
             authDomain: "zim-hacker-vip-e94a7.firebaseapp.com",
@@ -345,12 +459,13 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // DOM REFS
+        // DOM
         const receiveBadge = document.getElementById('receiveBadge');
         const receiveText = document.getElementById('receiveText');
         const authKeyBox = document.getElementById('authKeyBox');
         const authKey = document.getElementById('authKey');
         const copyBtn = document.getElementById('copyBtn');
+        const newKeyBtn = document.getElementById('newKeyBtn');
         const contactAdminBtn = document.getElementById('contactAdminBtn');
         const contactAdminSection = document.getElementById('contactAdminSection');
         const progressBar = document.getElementById('progressBar');
@@ -361,6 +476,7 @@
         const expiredOverlay = document.getElementById('expiredOverlay');
         const expiryTimeElement = document.getElementById('expiryTime');
         const generatedTimeElement = document.getElementById('generatedTime');
+        const deviceCountEl = document.getElementById('deviceCount');
 
         // STATE
         let currentKey = null;
@@ -370,6 +486,7 @@
         let lastProcessedSentAt = null;
         let autoCopyDone = false;
         let requestInProgress = false;
+        let keyExpired = false;
 
         // ===== HELPERS =====
         function formatDate(date) {
@@ -410,7 +527,7 @@
 
         function resetUI() {
             if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
-            currentKey = null; keyExpiresAt = null; keyGeneratedAt = null; autoCopyDone = false;
+            currentKey = null; keyExpiresAt = null; keyGeneratedAt = null; autoCopyDone = false; keyExpired = false;
 
             authKey.textContent = '—';
             authKey.classList.remove('expired', 'received');
@@ -419,8 +536,9 @@
             expiredOverlay.classList.remove('show');
 
             copyBtn.disabled = true;
-            copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Panel Login Key';
+            copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy My Device Key';
             copyBtn.classList.remove('copied');
+            newKeyBtn.classList.add('hidden');
 
             contactAdminBtn.style.display = 'none';
             contactAdminSection.classList.remove('show');
@@ -435,24 +553,51 @@
             setStatus('pending', 'fas fa-hourglass-half', 'Waiting for key...');
         }
 
-        // ===== REQUEST KEY FROM ADMIN (auto only, no button) =====
-        function requestKeyFromAdmin() {
+        // ===== PUBLIC DEVICE REGISTRATION (once per device) =====
+        function registerDevicePublic() {
+            const deviceRef = db.ref('publicDevices/' + DEVICE_ID);
+            deviceRef.once('value').then((snap) => {
+                const now = formatToStoredDateTime(new Date());
+                if (!snap.exists()) {
+                    deviceRef.set({
+                        deviceId: DEVICE_ID,
+                        firstSeen: now,
+                        lastSeen: now,
+                        userAgent: navigator.userAgent.substring(0, 120)
+                    });
+                } else {
+                    deviceRef.update({ lastSeen: now });
+                }
+            });
+        }
+
+        // ===== REQUEST KEY (only if no active key exists) =====
+        function requestKeyFromAdmin(isRenewal = false) {
             if (requestInProgress) return;
             requestInProgress = true;
 
+            registerDevicePublic();
+
             const requestId = 'req-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 
-            setReceiveBadge('requesting', 'Sending request to admin...');
-            setStatus('requesting', 'fas fa-paper-plane', 'Request sent to admin...');
+            setReceiveBadge('requesting', isRenewal ? 'Requesting new 24h key...' : 'Sending request to admin...');
+            setStatus('requesting', 'fas fa-paper-plane', isRenewal ? 'Requesting new key...' : 'Request sent to admin...');
 
-            db.ref('keyRequest').set({
+            const requestData = {
                 requestId: requestId,
+                deviceId: DEVICE_ID,
                 requestedAt: formatToStoredDateTime(new Date()),
                 timestamp: Date.now(),
                 status: 'pending',
+                renewal: !!isRenewal,
                 userAgent: navigator.userAgent.substring(0, 100)
-            }).then(() => {
-                setReceiveBadge('requesting', '⏳ Request sent! Admin will respond shortly...');
+            };
+
+            Promise.all([
+                db.ref('keyRequest').set(requestData),
+                db.ref('deviceRequests/' + DEVICE_ID).set(requestData)
+            ]).then(() => {
+                setReceiveBadge('requesting', '⏳ Request sent! Admin will assign your key...');
                 setStatus('requesting', 'fas fa-spinner fa-spin', 'Waiting for admin...');
             }).catch((error) => {
                 console.error('Request error:', error);
@@ -477,24 +622,46 @@
 
                 copyBtn.classList.add('copied');
                 copyBtn.innerHTML = '<i class="fas fa-check"></i> Auto-Copied!';
-                setReceiveBadge('success', '✓ Key received & auto-copied!');
+                setReceiveBadge('success', '✓ Your device key received & copied!');
 
                 setTimeout(() => {
                     copyBtn.classList.remove('copied');
-                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Panel Login Key';
+                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy My Device Key';
                 }, 3000);
             } catch (e) { console.log('Auto-copy failed:', e); }
         }
 
-        // ===== LOAD KEY SENT BY ADMIN =====
+        // ===== LOAD KEY (per-device, SAME key for 24h) =====
         function loadSentKey(sentData) {
             const username = sentData.username;
             const sentAt = sentData.sentAt || '';
-            if (sentAt === lastProcessedSentAt) return;
+
+            // ⭐ SAME KEY PROTECTION: if same key already loaded, skip            if (currentKey === username && keyExpiresAt && keyExpiresAt > new Date()) {
+                // Already have this key, just refresh countdown
+                return;
+            }
+
+            if (sentAt === lastProcessedSentAt && currentKey === username) return;
             lastProcessedSentAt = sentAt;
 
             requestInProgress = false;
-            setReceiveBadge('success', 'Key received from admin: ' + username);
+
+            // ⭐ Strict per-device check
+            if (sentData.deviceId && sentData.deviceId !== DEVICE_ID) {
+                setReceiveBadge('error', '⚠️ This key belongs to another device!');
+                setStatus('expired', 'fas fa-ban', 'Key belongs to a different device.');
+                authKey.textContent = '—';
+                authKey.classList.add('expired');
+                authKeyBox.classList.add('expired');
+                copyBtn.disabled = true;
+                copyBtn.innerHTML = '<i class="fas fa-ban"></i> Device Mismatch';
+                newKeyBtn.classList.add('hidden');
+                contactAdminBtn.style.display = 'flex';
+                contactAdminSection.classList.add('show');
+                return;
+            }
+
+            setReceiveBadge('success', 'Key received: ' + username);
 
             db.ref('userinfo/' + username).once('value').then((snapshot) => {
                 if (!snapshot.exists()) {
@@ -503,15 +670,49 @@
                 }
 
                 const data = snapshot.val();
+
+                // ⭐ Strict per-device check on userinfo
+                if (data.deviceId && data.deviceId !== DEVICE_ID) {
+                    setReceiveBadge('error', '⚠️ Key already bound to another device!');
+                    setStatus('expired', 'fas fa-ban', 'This key is registered to another device.');
+                    authKey.textContent = username;
+                    authKey.classList.add('expired');
+                    authKeyBox.classList.remove('pulse');
+                    authKeyBox.classList.add('expired');
+                    copyBtn.disabled = true;
+                    copyBtn.innerHTML = '<i class="fas fa-ban"></i> Device Locked';
+                    newKeyBtn.classList.add('hidden');
+                    contactAdminBtn.style.display = 'flex';
+                    contactAdminSection.classList.add('show');
+                    return;
+                }
+
                 const status = data.status || 'inactive';
-                const validityDate = parseStoredDateTime(data.validity || '');
+                let validityDate = parseStoredDateTime(data.validity || '');
                 const generatedDate = parseStoredDateTime(data.rgtime || '');
 
-                if (!validityDate) { setStatus('expired', 'fas fa-exclamation-circle', 'Invalid validity'); return; }
+                // ⭐ 24h max
+                let finalExpiry;
+                let finalGenerated = generatedDate || new Date();
+                if (generatedDate) {
+                    const maxExpiry = new Date(generatedDate.getTime() + 24 * 60 * 60 * 1000);
+                    if (validityDate && validityDate < maxExpiry) {
+                        finalExpiry = validityDate;
+                    } else {
+                        finalExpiry = maxExpiry;
+                    }
+                } else {
+                    finalExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+                }
+
+                if (!finalExpiry || isNaN(finalExpiry.getTime())) {
+                    setStatus('expired', 'fas fa-exclamation-circle', 'Invalid validity');
+                    return;
+                }
 
                 currentKey = username;
-                keyExpiresAt = validityDate;
-                keyGeneratedAt = generatedDate || new Date();
+                keyExpiresAt = finalExpiry;
+                keyGeneratedAt = finalGenerated;
 
                 if (status !== 'active') {
                     setStatus('expired', 'fas fa-ban', 'Key is inactive. Contact admin.');
@@ -523,11 +724,13 @@
                     expiryTimeElement.textContent = formatDate(keyExpiresAt);
                     copyBtn.disabled = true;
                     copyBtn.innerHTML = '<i class="fas fa-ban"></i> Key Inactive';
+                    newKeyBtn.classList.add('hidden');
                     return;
                 }
 
                 if (keyExpiresAt <= new Date()) {
-                    setStatus('expired', 'fas fa-exclamation-circle', 'Key has expired');
+                    keyExpired = true;
+                    setStatus('expired', 'fas fa-exclamation-circle', 'Key expired (24h). Get new key.');
                     authKey.textContent = username;
                     authKey.classList.add('expired');
                     authKeyBox.classList.remove('pulse');
@@ -537,6 +740,7 @@
                     expiredOverlay.classList.add('show');
                     copyBtn.disabled = true;
                     copyBtn.innerHTML = '<i class="fas fa-ban"></i> Key Expired';
+                    newKeyBtn.classList.remove('hidden');
                     contactAdminBtn.style.display = 'flex';
                     contactAdminSection.classList.add('show');
                     progressBar.style.width = '0%';
@@ -546,7 +750,8 @@
                     return;
                 }
 
-                // ===== VALID KEY! =====
+                // ===== VALID KEY =====
+                keyExpired = false;
                 authKey.textContent = username;
                 authKey.classList.add('received');
                 authKeyBox.classList.remove('expired', 'shake');
@@ -556,11 +761,12 @@
 
                 generatedTimeElement.textContent = formatDate(keyGeneratedAt);
                 expiryTimeElement.textContent = formatDate(keyExpiresAt);
-                setStatus('', 'fas fa-check-circle', 'Key received successfully!');
-                setReceiveBadge('success', '✓ Key active: ' + username);
+                setStatus('', 'fas fa-check-circle', 'Your device key is active (24h).');
+                setReceiveBadge('success', '✓ Device key active · same key for 24h');
 
                 copyBtn.disabled = false;
-                copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Panel Login Key';
+                copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy My Device Key';
+                newKeyBtn.classList.add('hidden');
                 contactAdminBtn.style.display = 'none';
                 contactAdminSection.classList.remove('show');
 
@@ -569,7 +775,6 @@
                 countdownInterval = setInterval(updateCountdown, 1000);
                 authKeyBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-                // AUTO COPY
                 setTimeout(() => autoCopyKey(username), 500);
             }).catch((error) => {
                 console.error('Firebase error:', error);
@@ -593,17 +798,20 @@
                 const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
                 countdownElement.textContent = `${hours}h ${minutes}m ${seconds}s remaining`;
                 countdownElement.style.color = '';
+                keyExpired = false;
             } else {
+                keyExpired = true;
                 progressBar.style.width = '0%';
                 progressBar.classList.add('expired');
-                countdownElement.textContent = 'Expired';
+                countdownElement.textContent = 'Expired (24h)';
                 countdownElement.style.color = 'var(--danger)';
                 copyBtn.disabled = true;
                 copyBtn.innerHTML = '<i class="fas fa-ban"></i> Key Expired';
+                newKeyBtn.classList.remove('hidden');
                 contactAdminBtn.style.display = 'flex';
                 contactAdminSection.classList.add('show');
-                setStatus('expired', 'fas fa-exclamation-circle', 'Key has expired');
-                setReceiveBadge('error', 'Key has expired');
+                setStatus('expired', 'fas fa-exclamation-circle', 'Key expired (24h). Get new key.');
+                setReceiveBadge('error', 'Key expired · request new key');
                 authKeyBox.classList.remove('pulse');
                 authKeyBox.classList.add('expired', 'shake');
                 authKey.classList.add('expired');
@@ -633,24 +841,81 @@
             }, 2000);
         });
 
+        // ⭐ NEW KEY: only when expired
+        newKeyBtn.addEventListener('click', function() {
+            if (requestInProgress) return;
+
+            resetUI();
+            keyExpired = false;
+            lastProcessedSentAt = null;
+
+            db.ref('sentKey').remove().then(() => {
+                setTimeout(() => {
+                    requestKeyFromAdmin(true);
+                }, 300);
+            }).catch((err) => {
+                console.error('Failed to clear old key:', err);
+                requestKeyFromAdmin(true);
+            });
+        });
+
         contactAdminBtn.addEventListener('click', function(e) {
             e.preventDefault();
             contactAdminSection.scrollIntoView({ behavior: 'smooth' });
         });
 
+        // ===== LIVE DEVICE COUNTER =====
+        function initDeviceCounter() {
+            db.ref('publicDevices').on('value', (snap) => {
+                const count = snap.numChildren();
+                deviceCountEl.textContent = count;
+            });
+        }
+
         // ===== INIT =====
         function init() {
             resetUI();
+            registerDevicePublic();
+            initDeviceCounter();
 
-            // Listen to sentKey — admin writes here after processing request
-            db.ref('sentKey').on('value', (snapshot) => {
+            // ⭐ PRIMARY: Device-specific key listener (each device has own key)
+            db.ref('deviceKeys/' + DEVICE_ID).on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data && data.username && data.sentAt) {
                     loadSentKey(data);
-                } else {
-                    if (currentKey) {
-                        resetUI();
+                }
+            });
+
+            // Fallback: global sentKey (only if matching deviceId)
+            db.ref('sentKey').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.username && data.sentAt) {
+                    if (!data.deviceId || data.deviceId === DEVICE_ID) {
+                        loadSentKey(data);
                     }
+                }
+            });
+
+            // ⭐ CHECK EXISTING KEY FIRST (refresh-safe)
+            // If this device already has a key in deviceKeys, use it
+            db.ref('deviceKeys/' + DEVICE_ID).once('value').then((snap) => {
+                const existing = snap.val();
+                if (existing && existing.username) {
+                    // Device already has a key → just load it, don't request
+                    loadSentKey(existing);
+                } else {
+                    // No key yet → check deviceRequests for pending
+                    db.ref('deviceRequests/' + DEVICE_ID).once('value').then((reqSnap) => {
+                        const req = reqSnap.val();
+                        if (req && req.status === 'pending') {
+                            // Already requested, wait
+                            setReceiveBadge('requesting', '⏳ Request already sent. Waiting...');
+                            setStatus('requesting', 'fas fa-spinner fa-spin', 'Waiting for admin...');
+                        } else {
+                            // No key, no request → auto request
+                            setTimeout(() => requestKeyFromAdmin(false), 800);
+                        }
+                    });
                 }
             });
 
@@ -672,7 +937,12 @@
                     const data = snapshot.val();
                     const validityDate = parseStoredDateTime(data.validity || '');
                     if (validityDate) {
-                        keyExpiresAt = validityDate;
+                        if (keyGeneratedAt) {
+                            const maxExpiry = new Date(keyGeneratedAt.getTime() + 24 * 60 * 60 * 1000);
+                            keyExpiresAt = (validityDate < maxExpiry) ? validityDate : maxExpiry;
+                        } else {
+                            keyExpiresAt = validityDate;
+                        }
                         if (keyExpiresAt <= new Date()) updateCountdown();
                     }
                     if (data.status !== 'active') {
@@ -680,14 +950,10 @@
                         authKey.classList.add('expired');
                         copyBtn.disabled = true;
                         copyBtn.innerHTML = '<i class="fas fa-ban"></i> Key Inactive';
+                        newKeyBtn.classList.remove('hidden');
                     }
                 }
             });
-
-            // 🚀 AUTO-SEND REQUEST TO ADMIN ON PAGE LOAD
-            setTimeout(() => {
-                requestKeyFromAdmin();
-            }, 800);
         }
 
         init();
